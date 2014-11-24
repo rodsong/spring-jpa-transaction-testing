@@ -71,7 +71,7 @@ Question
 	 * {@link org.springframework.jdbc.datasource.DataSourceTransactionManager}
 	 * when working on a JDBC 3.0 driver. Some JTA providers might support
 	 * nested transactions as well.
-	 注意，nested是spring为DataSourceTransactionManager定义，不支持orm，比如hibernate。
+	 注意，nested是spring为DataSourceTransactionManager定义，不支持orm框架，比如hibernate。
 
    1： Dirty reads（脏读）。也就是说，比如事务A的未提交（还依然缓存）的数据被事务B读走，如果事务A失败回滚，会导致事务B所读取的的数据是错误的。
    2： non-repeatable reads（数据不可重复读）。比如事务A中两处读取数据-total-的值。在第一读的时候，total是100，然后事务B就把total的数据改成 200，事务A再读一次，结果就发现，total竟然就变成200了，造成事务A数据混乱。
@@ -104,3 +104,6 @@ Question
 10. 在某些数据库中1是关键字，类似于true，所以这条语句就会把所有的数据全部查询出来，从而产生SQL注入攻击
     String sql = “select * from users where name=’” +  name  + “’”;
     select * from users where name = '' or 1 or '';
+	
+	
+	
