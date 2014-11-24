@@ -1,0 +1,106 @@
+Question
+
+1.Spring中的@Transactional 放在 类级别 和 方法级别 上有什么不同？
+
+
+2.只读事务和没有事务有什么区别?
+    在执行完第一条sql的时候，执行第二条查询SQL,而这个之间有数据被改变了，第二条数据查询就有可能不一致
+    而只读查询则保证了事务级别的读一致性，即在该事务范围内执行的多条SQL都只会看到执行前点的数据状态，
+    而不会看到事务期间的任何被其他 SQL改变的状态。
+
+3.拦截式事物vs 注解
+ Are annotations better than XML for configuring spring?
+
+
+
+4. 事务的隔离级别
+    Read Uncommited：读未提交数据(会出现脏读,不可重复读和幻读)。
+    Read Commited：读已提交数据(会出现不可重复读和幻读)
+    Repeatable Read：可重复读(会出现幻读)
+    Serializable：串行化
+
+    脏读：一个事务读取到另一事务未提交的更新新据。
+    不可重复读：在同一事务中，多次读取同一数据返回的结果有所不同。换句话说就是，后续读取可以读到另一事务已提交的更新数据。
+    相反，“可重复读”在同一事务中多次读取数据时，能够保证所读数据一样，也就是，后续读取不能读到另一事务已提交的更新数据。
+    幻读：一个事务读取到另一事务已提交的insert数据。
+
+
+
+5.JPA Entity 为什么需要默认无参构造方法？
+
+
+6. spring   @Transactional(readOnly = true) 作用。
+
+    “只读事务”并不是一个强制选项，它只是一个“暗示”，提示数据库驱动程序和数据库系统，
+    这个事务并不包含更改数据的操作，那么JDBC驱动程序和数据库就有可能根据这种情况对该事务进行一些特定的优化，
+    比方说不安排相应的数据库锁，以减轻事务对数据库的压力，毕竟事务也是要消耗数据库的资源的。
+    但是你非要在“只读事务”里面修改数据，也并非不可以，只不过对于数据一致性的保护不像“读写事务”那样保险而已。
+
+7. Spring TransactionDefinition接口中定义五个隔离级别：
+      ISOLATION_DEFAULT 这是一个PlatfromTransactionManager默认的隔离级别，使用数据库默认的事务隔离级别.
+                        另外四个与JDBC的隔离级别相对应；
+      ISOLATION_READ_UNCOMMITTED 这是事务最低的隔离级别，它充许别外一个事务可以看到这个事务未提交的数据。
+                                 这种隔离级别会产生脏读，不可重复读和幻像读。
+      ISOLATION_READ_COMMITTED  保证一个事务修改的数据提交后才能被另外一个事务读取。另外一个事务不能读取该事务未提交的数据。
+                                这种事务隔离级别可以避免脏读出现，但是可能会出现不可重复读和幻像读。
+      ISOLATION_REPEATABLE_READ  这种事务隔离级别可以防止脏读，不可重复读。但是可能出现幻像读。
+                                 它除了保证一个事务不能读取另一个事务未提交的数据外，还保证了避免下面的情况产生(不可重复读)。
+      ISOLATION_SERIALIZABLE 这是花费最高代价但是最可靠的事务隔离级别。事务被处理为顺序执行。
+                             除了防止脏读，不可重复读外，还避免了幻像读。
+
+    PROPAGATION_REQUIRED（XML文件中为REQUIRED)	表示当前方法必须在一个具有事务的上下文中运行，如有客户端有事务在进行，
+                                                 那么被调用端将在该事务中运行，否则的话重新开启一个事务。
+
+    PROPAGATION_SUPPORTS(XML文件中为SUPPORTS）	表示当前方法不必需要具有一个事务上下文，但是如果有一个事务的话，
+                                                它也可以在这个事务中运行
+    PROPAGATION_MANDATORY(XML文件中为MANDATORY）	表示当前方法必须在一个事务中运行，如果没有事务，将抛出异常
+    PROPAGATION_NESTED(XML文件中为NESTED)	      表示如果当前方法正有一个事务在运行中，则该方法应该运行在一个嵌套事务中，
+                                               被嵌套的事务可以独立于被封装的事务中进行提交或者回滚。
+                                               如果封装事务存在，并且外层事务抛出异常回滚，那么内层事务必须回滚，
+                                               反之，内层事务并不影响外层事务。
+                                               如果封装事务不存在，则同PROPAGATION_REQUIRED的一样
+    PROPAGATION_NEVER（XML文件中为NEVER)		表示当方法务不应该在一个事务中运行，如果存在一个事务，则抛出异常
+    PROPAGATION_REQUIRES_NEW(XML文件中为REQUIRES_NEW）	表示当前方法必须运行在它自己的事务中。一个新的事务将启动，
+                                                        而且如果有一个现有的事务在运行的话，则这个方法将在运行期被挂起，
+                                                        直到新的事务提交或者回滚才恢复执行。
+    PROPAGATION_NOT_SUPPORTED（XML文件中为NOT_SUPPORTED）	表示该方法不应该在一个事务中运行。如果有一个事务正在运行，
+                                                        他将在运行期被挂起.
+
+     *<p><b>NOTE:</b> Actual creation of a nested transaction will only work on
+	 * specific transaction managers. Out of the box, this only applies to the JDBC
+	 * {@link org.springframework.jdbc.datasource.DataSourceTransactionManager}
+	 * when working on a JDBC 3.0 driver. Some JTA providers might support
+	 * nested transactions as well.
+	 注意，nested是spring为DataSourceTransactionManager定义，不支持orm，比如hibernate。
+
+   1： Dirty reads（脏读）。也就是说，比如事务A的未提交（还依然缓存）的数据被事务B读走，如果事务A失败回滚，会导致事务B所读取的的数据是错误的。
+   2： non-repeatable reads（数据不可重复读）。比如事务A中两处读取数据-total-的值。在第一读的时候，total是100，然后事务B就把total的数据改成 200，事务A再读一次，结果就发现，total竟然就变成200了，造成事务A数据混乱。
+   3： phantom reads（幻象读数据），这个和non-repeatable reads相似，也是同一个事务中多次读不一致的问题。但是non-repeatable reads的不一致是因为他所要取的数据集被改变了（比如total的数据），但是phantom reads所要读的数据的不一致却不是他所要读的数据集改变，而是他的条件数据集改变。比如Select account.id where account.name="ppgogo*",第一次读去了6个符合条件的id，第二次读取的时候，由于事务b把一个帐号的名字由"dd"改成"ppgogo1"，结果取出来了7个数据。
+
+
+8. issue,
+    Standard JPA does not support custom isolation levels.This is a limitation of JPA, not Spring;
+
+    solution,
+    http://www.byteslounge.com/tutorials/spring-change-transaction-isolation-level-example
+
+    Spring JpaTransactionManager的误解
+    http://www.iteye.com/blog/1577075
+
+    Actually, I'm surprised that it does work for you against Hibernate 3.x: Due to limitations in JPA interaction, we don't set the read-only flag on the Connection itself when going through the JPA contract (i.e. JpaTransactionManager with HibernateJpaDialect). We rather only do that when using Hibernate natively (i.e. HibernateTransactionManager).
+    In general, the read-only flag is just a hint. We try to switch the flush mode to 'manual' etc, we even try to set the read-only flag on the native JDBC Connection if we can... But there are no guarantees: readOnly=true is not designed to prevent write access, it rather just gives the runtime a hint to optimize execution for read-only access.
+    Juergen Hoeller
+
+    https://jira.spring.io/browse/SPR-8959
+
+9. The annotation supports further configuration as well:
+
+   the Propagation Type of the transaction
+   the Isolation Level of the transaction
+   a Timeout for the operation wrapped by the transaction
+   a readOnly flag – a hint for the persistence provider that the transaction should be read only
+   detailed Rollback configuration
+
+10. 在某些数据库中1是关键字，类似于true，所以这条语句就会把所有的数据全部查询出来，从而产生SQL注入攻击
+    String sql = “select * from users where name=’” +  name  + “’”;
+    select * from users where name = '' or 1 or '';
